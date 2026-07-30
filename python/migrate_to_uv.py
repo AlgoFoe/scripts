@@ -122,6 +122,33 @@ def test_uv_block(
     lines.append('')
     return '\n'.join(lines) + '\n'
 
+def remove_headless_setup(lines: list):
+    changes = []
+    blocks = find_step_blocks(lines)
+
+    for i, (start, end) in enumerate(blocks):
+        block = ''.join(lines[start:end])
+
+        if (
+            'pyvista/setup-headless-display-action' in block
+            or 'use-xvfb' in block
+            or 'headless-gui' in block
+        ):
+            changes.append((start, end, None))
+            print('  [REMOVE] Headless display setup')
+
+            if i > 0:
+                prev_start, prev_end = blocks[i - 1]
+                prev_block = ''.join(lines[prev_start:prev_end])
+
+                if 'tlambert03/setup-qt-libs' in prev_block:
+                    changes.append((prev_start, prev_end, None))
+                    print('  [REMOVE] setup-qt-libs')
+
+    for start, end, _ in sorted(changes, key=lambda x: x[0], reverse=True):
+        del lines[start:end]
+
+    return bool(changes)
 
 def setup_uv_block(ind: str, python_version: str):
     p = ind + '  '
@@ -155,6 +182,7 @@ def migrate_workflow(
 
     lines   = text.splitlines(keepends=True)
     changes = [] # (start, end, new_str | None)
+    remove_headless_setup(lines)
 
     for start, end in find_step_blocks(lines):
         block = ''.join(lines[start:end])
@@ -169,7 +197,7 @@ def migrate_workflow(
             else:
                 new = setup_uv_block(ind, pyver)
                 changes.append((start, end, new))
-                print(f'  [REPLACE] setup-python → setup-uv (py{pyver})')
+                print(f'  [REPLACE] setup-python - setup-uv (py{pyver})')
 
         elif 'python -m pip install' in block and 'run:' in block:
             new = block
@@ -181,7 +209,7 @@ def migrate_workflow(
                 new = re.sub(r'(\s+run:\s)', r'\n        shell: bash\1', new, count=1)
             if new != block:
                 changes.append((start, end, new))
-                print('  [REPLACE] pip → uv pip in install step')
+                print('  [REPLACE] pip - uv pip in install step')
 
         elif (
             'neuroinformatics-unit/actions/test@v2' in block
@@ -200,7 +228,7 @@ def migrate_workflow(
                 ),
             )
             changes.append((start, end, new))
-            print('  [REPLACE] napari-dev test@v2 → test-uv@main + install-main-branch')
+            print('  [REPLACE] napari-dev test@v2 - test-uv@main + install-main-branch')
 
         elif 'neuroinformatics-unit/actions/test@v2' in block:
             pyver = extract_kv(
@@ -214,7 +242,7 @@ def migrate_workflow(
                 name=name if name else 'Run tests',
             )
             changes.append((start, end, new))
-            print(f'  [REPLACE] test@v2 → test-uv@main (name="{name or "Run tests"}")')
+            print(f'  [REPLACE] test@v2 - test-uv@main (name="{name or "Run tests"}")')
 
     for start, end, new in sorted(changes, key=lambda x: x[0], reverse=True):
         if new is None:
@@ -222,7 +250,7 @@ def migrate_workflow(
         else:
             lines[start:end] = [new]
 
-    lines = [ln.replace('actions/cache@v3', 'actions/cache@v4') for ln in lines]
+    lines = [ln.replace('actions/cache@v3', 'actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57') for ln in lines]
 
     text = ''.join(lines)
     if text == original:
