@@ -4,7 +4,7 @@ set -euo pipefail
 ORG="brainglobe"
 BRANCH="migrate/tox-to-uv-action"
 PR_TITLE="ci: migrate from tox to pure-uv test action"
-PR_BODY='Migrate CI from `neuroinformatics-unit/actions/test@v2` (tox-based) to `neuroinformatics-unit/actions/test-uv@main` (pure uv).
+PR_BODY='Migrate CI from `neuroinformatics-unit/actions/test@v2` (tox) to `neuroinformatics-unit/actions/test-uv@main` (pure uv).'
 
 WORK_DIR="$(pwd)/.uv_migration_work"
 DRY_RUN=false
