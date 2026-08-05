@@ -295,6 +295,7 @@ def migrate_pyproject(path: Path):
     text = re.sub(r'addopts\s*=\s*(["\'].*?["\'])', update_addopts, text)
 
     text = re.sub(r'\n{3,}', '\n\n', text)
+    text = text.rstrip() + "\n"
 
     if text == original:
         print('  [SKIP] pyproject.toml already up to date.')
