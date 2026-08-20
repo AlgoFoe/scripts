@@ -4,8 +4,8 @@ set -euo pipefail
 
 ORG="brainglobe"
 BRANCH_NAME="update/standardize-precommit"
-PR_TITLE="ci: standardise pre-commit config"
-PR_BODY="Drops black in favor of ruff-format and bumps pre-commit-hooks/ruff/mypy/check-manifest/codespell revs to match the rest of BrainGlobe. Repo-specific hooks are left untouched."
+PR_TITLE="ci: standardize pre-commit config"
+PR_BODY="Standardizes the pre-commit configuration across BrainGlobe repositories while preserving repo-specific hooks and settings."
 WORK_DIR="$(pwd)/.brainglobe_precommit_work"
 DRY_RUN=false
 ONLY_REPO=""
@@ -88,7 +88,7 @@ process_repo() {
     # 4. Create branch
     git -C "$repo_dir" checkout -b "$BRANCH_NAME"
 
-    # 5. Run standardize.py
+    # 5. Run python helper
     log "Running pre-commit standardizer…"
     if ! python3 "$PYTHON_HELPER" "$config"; then
         warn "Standardizer failed for $repo - skipping."
