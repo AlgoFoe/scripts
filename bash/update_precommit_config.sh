@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ORG="brainglobe"
-BRANCH_NAME="update/standardize-precommit"
+BRANCH_NAME="update_standardise_precommit"
 PR_TITLE="ci: standardize pre-commit config"
 PR_BODY="Standardizes the pre-commit configuration across BrainGlobe repositories while preserving repo-specific hooks and settings."
 WORK_DIR="$(pwd)/.brainglobe_precommit_work"
@@ -11,14 +11,23 @@ DRY_RUN=false
 ONLY_REPO=""
 
 REPOS=(
-    "brainglobe-atlasapi"
-    "brainglobe-ccf-translator"
-    "brainglobe-heatmap"
-    "brainrender-napari"
-    "brainrender"
-    "cellfinder"
-    "morphapi"
-    "brainglobe-registeration"
+"brainglobe-ccf-translator"
+"brainglobe-data-api-connectivity"
+"brainglobe-data-api-volume"
+"brainglobe-heatmap"
+"brainglobe-napari-io"
+"brainglobe-registration"
+"brainglobe-segmentation"
+"brainglobe-space"
+"brainglobe-stitch"
+"brainglobe-template-builder"
+"brainglobe-utils"
+"brainglobe-workflows"
+"brainreg"
+"brainrender"
+"brainrender-napari"
+"cellfinder"
+"morphapi"
 )
 
 # parsing args
@@ -106,7 +115,7 @@ process_repo() {
     fi
 
     log "Diff preview:"
-    git -C "$repo_dir" diff -- "$(basename "$config")" || true
+    git -C "$repo_dir" diff -- .pre-commit-config.yaml pyproject.toml || true
 
     if [[ "$DRY_RUN" == true ]]; then
         log "[DRY RUN] Would commit, push, and open PR for $repo."
@@ -114,7 +123,7 @@ process_repo() {
     fi
 
     # 7. Commit
-    git -C "$repo_dir" add "$(basename "$config")"
+    git -C "$repo_dir" add .pre-commit-config.yaml pyproject.toml
     git -C "$repo_dir" commit -m "$PR_TITLE"
 
     # 8. Push
@@ -129,7 +138,6 @@ process_repo() {
         --base main \
         --title "$PR_TITLE" \
         --body "$PR_BODY" \
-        --label "maintenance" \
     && log "PR opened for $repo." \
     || warn "PR creation failed for $repo (maybe label doesn't exist - try without --label)."
 
